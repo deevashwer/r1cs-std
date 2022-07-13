@@ -107,6 +107,23 @@ pub trait CurveVar<C: ProjectiveCurve, ConstraintF: Field>:
         Ok(res)
     }
 
+    fn multi_scalar_mul_le(
+        bases: &Vec<Self>,
+        bits: &Vec<Vec<Boolean<ConstraintF>>>,
+    ) -> Result<Self, SynthesisError> {
+        let n = bases.len();
+        let m = bits[0].len();
+        assert!(n == bits.len());
+        for i in 1..n {
+            assert!(m == bits[i].len());
+        }
+        let mut res = Self::zero();
+        for i in 0..n {
+            res += bases[i].scalar_mul_le(bits[i].iter())?;
+        }
+        Ok(res)
+    }
+
     /// Computes a `I * self` in place, where `I` is a `Boolean` *little-endian*
     /// representation of the scalar.
     ///
