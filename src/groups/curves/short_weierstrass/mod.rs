@@ -529,6 +529,45 @@ where
         infinity.select(&Self::zero(), &mul_result)
     }
 
+    #[tracing::instrument(target = "r1cs", skip(bits))]
+    fn multi_scalar_mul_le(
+        bases: &Vec<Self>,
+        bits: &Vec<Vec<Boolean<<P::BaseField as Field>::BasePrimeField>>>,
+    ) -> Result<Self, SynthesisError> {
+        let n = bases.len();
+        assert!(n == bits.len());
+        let m = bits.iter().map(|b| b.len()).max().unwrap_or(0);
+        if m == 0 {
+            return Ok(Self::zero());
+        }
+        let affine_bases = bases.iter().map(|b| b.to_affine()).collect::<Result<Vec<_>, SynthesisError>>()?;
+        let non_zero_affine_bases = affine_bases.iter().map(|b| NonZeroAffineVar::<P, F>::new(b.x.clone(), b.y.clone())).collect::<Vec<_>>();
+        let mut accumulator = non_zero_affine_bases[0].clone();
+        let mut initial_acc_value = accumulator.into_projective();
+
+        for i in (0..m).rev() {
+            accumulator.double_in_place()?;
+            initial_acc_value.double_in_place()?;
+            for j in 0..n {
+                if i < bits[j].len() && !(i == m-1 && j == 0) {
+                    let bit = &bits[j][i];
+                    if bit.is_constant() {
+                        if *bit == Boolean::TRUE {
+                            accumulator = accumulator.add_unchecked(&non_zero_affine_bases[j])?;
+                        }
+                    } else {
+                        let temp = accumulator.add_unchecked(&non_zero_affine_bases[j])?;
+                        accumulator = bit.select(&temp, &accumulator)?;
+                    }
+                }
+            }
+        }
+        let mut res = accumulator.into_projective();
+        let subtrahend = bits[0][m-1].select(&Self::zero(), &initial_acc_value)?;
+        res -= &subtrahend;
+        Ok(res)
+    }
+
     #[tracing::instrument(target = "r1cs", skip(scalar_bits_with_bases))]
     fn precomputed_base_scalar_mul_le<'a, I, B>(
         &mut self,
