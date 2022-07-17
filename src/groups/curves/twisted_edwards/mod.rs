@@ -276,7 +276,7 @@ where
             Ok(ge) => {
                 let ge: TEAffine<P> = ge.into();
                 (Ok(ge.x), Ok(ge.y))
-            }
+            },
             _ => (
                 Err(SynthesisError::AssignmentMissing),
                 Err(SynthesisError::AssignmentMissing),
@@ -654,7 +654,7 @@ where
                     ge.enforce_equal(&ge)?;
                     Ok(ge)
                 }
-            }
+            },
         }
     }
 }

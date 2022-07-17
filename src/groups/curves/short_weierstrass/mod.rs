@@ -14,6 +14,10 @@ use crate::{fields::fp::FpVar, prelude::*, ToConstraintFieldGadget, Vec};
 pub mod bls12;
 
 /// This module provides a generic implementation of G1 and G2 for
+/// the [\[BN254]\](<https://eprint.iacr.org/2013/879.pdf>) bilinear curve.
+pub mod bn254;
+
+/// This module provides a generic implementation of G1 and G2 for
 /// the [\[MNT4]\](<https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.20.8113&rep=rep1&type=pdf>)
 ///  family of bilinear groups.
 pub mod mnt4;
@@ -209,7 +213,7 @@ where
                 } else {
                     (Ok(ge.x), Ok(ge.y), Ok(P::BaseField::one()))
                 }
-            }
+            },
             _ => (
                 Err(SynthesisError::AssignmentMissing),
                 Err(SynthesisError::AssignmentMissing),
@@ -540,8 +544,14 @@ where
         if m == 0 {
             return Ok(Self::zero());
         }
-        let affine_bases = bases.iter().map(|b| b.to_affine()).collect::<Result<Vec<_>, SynthesisError>>()?;
-        let non_zero_affine_bases = affine_bases.iter().map(|b| NonZeroAffineVar::<P, F>::new(b.x.clone(), b.y.clone())).collect::<Vec<_>>();
+        let affine_bases = bases
+            .iter()
+            .map(|b| b.to_affine())
+            .collect::<Result<Vec<_>, SynthesisError>>()?;
+        let non_zero_affine_bases = affine_bases
+            .iter()
+            .map(|b| NonZeroAffineVar::<P, F>::new(b.x.clone(), b.y.clone()))
+            .collect::<Vec<_>>();
         let mut accumulator = non_zero_affine_bases[0].clone();
         let mut initial_acc_value = accumulator.into_projective();
 
@@ -549,7 +559,7 @@ where
             accumulator.double_in_place()?;
             initial_acc_value.double_in_place()?;
             for j in 0..n {
-                if i < bits[j].len() && !(i == m-1 && j == 0) {
+                if i < bits[j].len() && !(i == m - 1 && j == 0) {
                     let bit = &bits[j][i];
                     if bit.is_constant() {
                         if *bit == Boolean::TRUE {
@@ -563,7 +573,11 @@ where
             }
         }
         let mut res = accumulator.into_projective();
-        let subtrahend = bits[0][m-1].select(&Self::zero(), &initial_acc_value)?;
+        let subtrahend = if m - 1 < bits[0].len() {
+            bits[0][m - 1].select(&Self::zero(), &initial_acc_value)?
+        } else {
+            initial_acc_value
+        };
         res -= &subtrahend;
         Ok(res)
     }
@@ -905,7 +919,7 @@ where
                     ge.enforce_equal(&ge)?;
                     Ok(ge)
                 }
-            }
+            },
         }
     }
 }
