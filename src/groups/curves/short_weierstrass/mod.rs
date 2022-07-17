@@ -15,7 +15,7 @@ pub mod bls12;
 
 /// This module provides a generic implementation of G1 and G2 for
 /// the [\[BN254]\](<https://eprint.iacr.org/2013/879.pdf>) bilinear curve.
-pub mod bn254;
+pub mod bn;
 
 /// This module provides a generic implementation of G1 and G2 for
 /// the [\[MNT4]\](<https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.20.8113&rep=rep1&type=pdf>)

@@ -6,6 +6,8 @@ use core::fmt::Debug;
 
 /// This module implements pairings for BLS12 bilinear groups.
 pub mod bls12;
+/// This module implements pairings for BN bilinear groups.
+pub mod bn;
 /// This module implements pairings for MNT4 bilinear groups.
 pub mod mnt4;
 /// This module implements pairings for MNT6 bilinear groups.

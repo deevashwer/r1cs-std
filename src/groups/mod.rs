@@ -9,7 +9,7 @@ use core::{borrow::Borrow, fmt::Debug};
 /// This module contains implementations of arithmetic for various curve models.
 pub mod curves;
 
-pub use self::curves::short_weierstrass::{bls12, mnt4, mnt6};
+pub use self::curves::short_weierstrass::{bls12, bn, mnt4, mnt6};
 
 /// A hack used to work around the lack of implied bounds.
 pub trait GroupOpsBounds<'a, F, T: 'a>:
