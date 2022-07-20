@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use ark_std::vec::Vec;
 use ark_ec::ProjectiveCurve;
 use ark_ff::Field;
 use ark_relations::r1cs::{Namespace, SynthesisError};
